@@ -25,19 +25,19 @@ def get_authenticated_service():
 
 def get_playlist_items(youtube, playlist_id):
     items = []
-    next_page_token = None
-    while True:
+    try:
         request = youtube.playlistItems().list(
-            part='snippet',
+            part="snippet",
             playlistId=playlist_id,
-            maxResults=50,
-            pageToken=next_page_token
+            maxResults=50
         )
-        response = request.execute()
-        items.extend(response['items'])
-        next_page_token = response.get('nextPageToken')
-        if not next_page_token:
-            break
+        while request:
+            response = request.execute()
+            items.extend(response['items'])
+            request = youtube.playlistItems().list_next(request, response)
+    except Exception as e:
+        print(f"Bir hata oluştu: {e}")
+        print(f"Kontrol edilen playlist ID: {playlist_id}")
     return items
 
 def create_playlist(youtube, title, description):
